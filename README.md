@@ -1,11 +1,11 @@
-# Machine Learning Samples
+# Machine Learning Code Samples
 
 This repository contains experimental notebooks for learning ML concepts
 
 Classical ML
 
-- Anamoly detection using PCA -> https://github.com/sriksmachi/sriksml/blob/main/pca.ipynb
-- Resampling Approaches -> https://github.com/sriksmachi/sriksml/blob/main/ResamplingApproaches.ipynb
+- Anamoly detection using PCA -> https://github.com/sriksmachi/sriksml/blob/main/classical-ml/pca.ipynb
+- Resampling Approaches -> https://github.com/sriksmachi/sriksml/blob/main/classical-ml/ResamplingApproaches.ipynb
 
 
 Language Models
