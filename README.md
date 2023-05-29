@@ -13,3 +13,9 @@ Language Models
 
 Reinforcement Learning
 
+- Q-learming
+- SARSA
+- DQN
+- DDPG
+- TRPO
+- PPO
