@@ -1,4 +1,5 @@
+**/*.h5
+**/*.pkl
 /.env
 /.venv
-/**/*/rl
-*.h5
+models/
