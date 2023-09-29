@@ -1,12 +1,7 @@
 import gym
 from gym.utils import seeding
-import os
-from os import stat
 import numpy as np
-import random
 from gym import spaces
-from numpy.lib.function_base import select
-from itertools import permutations
 from gym.utils import seeding
 from gym import spaces
 

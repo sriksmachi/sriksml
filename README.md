@@ -10,7 +10,7 @@ This repository contains experimental notebooks for learning ML concepts
 - Text generation using Simple RNN and Glove Models -> https://github.com/sriksmachi/sriksml/blob/main/language-models/rnn-glove-embeddings.ipynb
 
 ## Reinforcement Learning
-- Q-learming
+- Q-learning
 - SARSA
 - DQN
 - DDPG
