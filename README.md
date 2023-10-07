@@ -16,4 +16,4 @@ This repository contains experimental notebooks for learning ML concepts
 - DQN
 - DDPG
 - TRPO
-- PPO
+- PPO: https://github.com/sriksmachi/sriksml/blob/main/reinforcement-learning/ppo.ipynb
