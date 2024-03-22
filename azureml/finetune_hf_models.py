@@ -2,7 +2,7 @@ from transformers import (
     AutoTokenizer, 
     AutoModelForSeq2SeqLM, 
     set_seed,
-    # HFArgumentParser,
+    HfArgumentParser,
     Seq2SeqTrainingArguments,
     DataCollatorForSeq2Seq,
     Seq2SeqTrainer
@@ -14,6 +14,9 @@ import nltk
 import evaluate
 from peft import LoraConfig, TaskType, get_peft_model
 import numpy as np
+import logging
+
+logger = logging.getLogger(__name__)
 
 @dataclass
 class ModelArguments:
@@ -31,6 +34,14 @@ class TrainingArguments:
     """
     Training arguments for the model
     """
+    dataset: str = field(
+        metadata={"help": "Dataset to use for training"},
+        default="squad"
+    )
+    seed: int = field(
+        metadata={"help": "Seed for the model"},
+        default=42
+    )
     target_input_length: str = field(
         metadata={"help": "Maximum length of the input text"},
         default=512
@@ -79,6 +90,14 @@ class TrainingArguments:
     
 def main():
     
+    parser = HfArgumentParser((ModelArguments, TrainingArguments))
+    model_args, training_args = parser.parse_args_into_dataclasses()
+    parser.add_argument("--tensorboard_log_dir", default="/outputs/tblogs/")
+    log_level = training_args.get_process_log_level()
+    logger.setLevel(log_level)
+    logger.info(f"Training/evaluation parameters {training_args}")
+    set_seed(training_args.seed)
+    
     def preprocess_data(examples):
       """Adds prefix, tokenizes and sets the labels"""
       questions = examples["question"]
@@ -95,12 +114,12 @@ def main():
       model_inputs = tokenizer(inputs,
                                truncation='longest_first',
                                padding="max_length",
-                               max_length=target_input_length,
+                               max_length=training_args.target_input_length,
                                return_tensors="pt")
       model_inputs = tokenizer(text=inputs,
-                               max_length=target_max_length)
+                               max_length=training_args.target_max_length)
       model_inputs["query"] = tokenizer.batch_decode(model_inputs["input_ids"], skip_special_tokens=True)
-      labels = tokenizer(text_target=answers, max_length=target_max_length, truncation=True)
+      labels = tokenizer(text_target=answers, max_length=training_args.target_max_length, truncation=True)
       model_inputs["labels"] = labels["input_ids"]
       return model_inputs
 
@@ -116,35 +135,46 @@ def main():
         result = rogue_metric.compute(predictions=decoded_preds, references=decoded_labels, use_stemmer=True)
         return result
 
-    model_name = "google/flan-t5-small"
-    tokenizer = AutoTokenizer.from_pretrained(model_name)
-    model = AutoModelForSeq2SeqLM.from_pretrained(model_name, torch_dtype=torch.bfloat16)
-    squad = load_dataset("squad", split="train")
+    # 1. Load the dataset
+    squad = load_dataset(training_args.dataset, 
+                         split="train")
     squad = squad.train_test_split(test_size=0.2)
-    squad = squad.flatten()
-    filtered_squad = squad.filter(lambda x: (len(x.get('context')) + len(x.get('question')) < target_input_length) and (x.get('answers.answer_start')[0]) < (target_input_length + len(x.get('answers.text'))) and len(x.get('answers.text')) > 0)
+    squad = squad.flatten()    
+    filtered_squad = squad.filter(lambda x: (len(x.get('context')) + len(x.get('question')) < training_args.target_input_length) 
+                                  and (x.get('answers.answer_start')[0]) < (training_args.target_input_length
+                                                                            + len(x.get('answers.text'))) and len(x.get('answers.text')) > 0)
     filtered_squad = filtered_squad.shuffle()
-    filtered_squad['train'] = filtered_squad['train'].select(range(train_size))
-    filtered_squad['test'] = filtered_squad['test'].select(range(test_size))
+    filtered_squad['train'] = filtered_squad['train'].select(range(training_args.train_size))
+    filtered_squad['test'] = filtered_squad['test'].select(range(training_args.test_size))
     tensored_data = filtered_squad.map(preprocess_data, remove_columns=squad["train"].column_names, batched=True)
     tensored_data.set_format("pt", columns=["input_ids"], output_all_columns=True)
-    lora_config = LoraConfig(r=16, lora_alpha=32, target_modules=["lm_head"], lora_dropout=0.05, bias="none", task_type=TaskType.SEQ_2_SEQ_LM) # FLAN-T5)
+    
+    # 2. Load the tokenizer and model
+    tokenizer = AutoTokenizer.from_pretrained(model_args.model_name)
+    model = AutoModelForSeq2SeqLM.from_pretrained(model_args.model_name, torch_dtype=torch.bfloat16)
+    data_collator = DataCollatorForSeq2Seq(tokenizer=tokenizer, model=model_args.model_name)
+    
+    # 3. Load the PEFT model    
+    lora_config = LoraConfig(r=16, lora_alpha=32, target_modules=["lm_head"], lora_dropout=0.05, bias="none", task_type=TaskType.SEQ_2_SEQ_LM) 
     peft_model = get_peft_model(model, lora_config)
     peft_model = peft_model.to("cuda")    
     peft_model.print_trainable_parameters()
-    data_collator = DataCollatorForSeq2Seq(tokenizer=tokenizer, model=model_name)
+    
+    # 4. Load metrics
     nltk.download('punkt', quiet=True)
     rogue_metric = evaluate.load('rouge')
+    
+    # 5. Load the training arguments
     training_args = Seq2SeqTrainingArguments(
     output_dir="./peft_results",
-    learning_rate=LEARNING_RATE,
-    num_train_epochs=NUM_EPOCHS,
+    learning_rate=training_args.LEARNING_RATE,
+    num_train_epochs=training_args.NUM_EPOCHS,
     evaluation_strategy="epoch",
     predict_with_generate=True,
-    per_device_train_batch_size=BATCH_SIZE,
-    per_device_eval_batch_size=PER_DEVICE_EVAL_BATCH,
-    weight_decay=WEIGHT_DECAY,
-    save_total_limit=SAVE_TOTAL_LIM,
+    per_device_train_batch_size=training_args.BATCH_SIZE,
+    per_device_eval_batch_size=training_args.PER_DEVICE_EVAL_BATCH,
+    weight_decay=training_args.WEIGHT_DECAY,
+    save_total_limit=training_args.SAVE_TOTAL_LIM,
     push_to_hub=False
     )
 
@@ -158,6 +188,7 @@ def main():
             compute_metrics=compute_metrics
     )
     
+    # 6. Train the model    
     trainer.train()
     
 if __name__ == "__main__":
