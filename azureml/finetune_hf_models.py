@@ -18,26 +18,65 @@ import numpy as np
 @dataclass
 class ModelArguments:
     """    
+    Model arguments for the pre-training model
     """
     model_name: str = field(
         metadata={"help": "Name of the pre-training language model from huggingface/models"}
+        default="google/flan-t5-small"       
     )
     
     
 @dataclass
 class TrainingArguments:  
-    target_input_length: str = 512
-target_max_length = 100
-train_size = 1000
-test_size = 300
-LEARNING_RATE = 1e-3
-BATCH_SIZE = 8
-PER_DEVICE_EVAL_BATCH = 8
-WEIGHT_DECAY = 0.01
-SAVE_TOTAL_LIM = 3
-NUM_EPOCHS = 5
-lora_rank = 16
-
+    """
+    Training arguments for the model
+    """
+    target_input_length: str = field(
+        metadata={"help": "Maximum length of the input text"},
+        default=512
+    )
+    target_max_length: str = field(
+        metadata={"help": "Maximum length of the target text"},
+        default=100
+    )
+    train_size: str = field(
+        metadata={"help": "Number of training examples"},
+        default=1000
+    )
+    test_size: str = field(
+        metadata={"help": "Number of test examples"},
+        default=300
+    )
+    LEARNING_RATE: str = field(
+        metadata={"help": "Learning rate for the model"},
+        default=1e-3
+    )
+    BATCH_SIZE: str = field(
+        metadata={"help": "Batch size for training"},
+        default=8
+    )
+    PER_DEVICE_EVAL_BATCH: str = field(
+        metadata={"help": "Batch size for evaluation"},
+        default=8
+    )
+    WEIGHT_DECAY: str = field(
+        metadata={"help": "Weight decay for the model"},
+        default=0.01
+    )
+    SAVE_TOTAL_LIM: str = field(
+        metadata={"help": "Number of checkpoints to save"},
+        default=3
+    )
+    NUM_EPOCHS: str = field(
+        metadata={"help": "Number of epochs to train the model"},
+        default=5
+    )
+    lora_rank: str = field(
+        metadata={"help": "Rank of the LoRA matrix"},
+        default=16
+    )
+    
+    
 def main():
     
     def preprocess_data(examples):
