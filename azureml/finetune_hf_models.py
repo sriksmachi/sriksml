@@ -1,0 +1,125 @@
+from transformers import (
+    AutoTokenizer, 
+    AutoModelForSeq2SeqLM, 
+    set_seed,
+    # HFArgumentParser,
+    Seq2SeqTrainingArguments,
+    DataCollatorForSeq2Seq,
+    Seq2SeqTrainer
+    )
+from dataclasses import dataclass, field
+from datasets import load_dataset
+import torch
+import nltk
+import evaluate
+from peft import LoraConfig, TaskType, get_peft_model
+import numpy as np
+
+@dataclass
+class ModelArguments:
+    """    
+    """
+    model_name: str = field(
+        metadata={"help": "Name of the pre-training language model from huggingface/models"}
+    )
+    
+    
+@dataclass
+class TrainingArguments:  
+    target_input_length: str = 512
+target_max_length = 100
+train_size = 1000
+test_size = 300
+LEARNING_RATE = 1e-3
+BATCH_SIZE = 8
+PER_DEVICE_EVAL_BATCH = 8
+WEIGHT_DECAY = 0.01
+SAVE_TOTAL_LIM = 3
+NUM_EPOCHS = 5
+lora_rank = 16
+
+def main():
+    
+    def preprocess_data(examples):
+      """Adds prefix, tokenizes and sets the labels"""
+      questions = examples["question"]
+      contexts = examples["context"]
+      titles = examples["title"]
+      answers = []
+      for answer in examples["answers.text"]:
+        answers.append(answer[0])
+      inputs = []
+      for question, context in zip(questions, contexts):
+        prefix = f"""Answer a question about this article in few sentences:\n{context}\nQ:{question}A:"""
+        input = prefix.format(context=context.strip(), question=question.strip())
+        inputs.append(input)
+      model_inputs = tokenizer(inputs,
+                               truncation='longest_first',
+                               padding="max_length",
+                               max_length=target_input_length,
+                               return_tensors="pt")
+      model_inputs = tokenizer(text=inputs,
+                               max_length=target_max_length)
+      model_inputs["query"] = tokenizer.batch_decode(model_inputs["input_ids"], skip_special_tokens=True)
+      labels = tokenizer(text_target=answers, max_length=target_max_length, truncation=True)
+      model_inputs["labels"] = labels["input_ids"]
+      return model_inputs
+
+    def compute_metrics(eval_preds):
+        preds, labels = eval_preds
+        # decode preds and labels
+        labels = np.where(labels != -100, labels, tokenizer.pad_token_id)
+        decoded_preds = tokenizer.batch_decode(preds, skip_special_tokens=True)
+        decoded_labels = tokenizer.batch_decode(labels, skip_special_tokens=True)
+        # rougeLSum expects newline after each sentence
+        decoded_preds = ["\n".join(nltk.sent_tokenize(pred.strip())) for pred in decoded_preds]
+        decoded_labels = ["\n".join(nltk.sent_tokenize(label.strip())) for label in decoded_labels]
+        result = rogue_metric.compute(predictions=decoded_preds, references=decoded_labels, use_stemmer=True)
+        return result
+
+    model_name = "google/flan-t5-small"
+    tokenizer = AutoTokenizer.from_pretrained(model_name)
+    model = AutoModelForSeq2SeqLM.from_pretrained(model_name, torch_dtype=torch.bfloat16)
+    squad = load_dataset("squad", split="train")
+    squad = squad.train_test_split(test_size=0.2)
+    squad = squad.flatten()
+    filtered_squad = squad.filter(lambda x: (len(x.get('context')) + len(x.get('question')) < target_input_length) and (x.get('answers.answer_start')[0]) < (target_input_length + len(x.get('answers.text'))) and len(x.get('answers.text')) > 0)
+    filtered_squad = filtered_squad.shuffle()
+    filtered_squad['train'] = filtered_squad['train'].select(range(train_size))
+    filtered_squad['test'] = filtered_squad['test'].select(range(test_size))
+    tensored_data = filtered_squad.map(preprocess_data, remove_columns=squad["train"].column_names, batched=True)
+    tensored_data.set_format("pt", columns=["input_ids"], output_all_columns=True)
+    lora_config = LoraConfig(r=16, lora_alpha=32, target_modules=["lm_head"], lora_dropout=0.05, bias="none", task_type=TaskType.SEQ_2_SEQ_LM) # FLAN-T5)
+    peft_model = get_peft_model(model, lora_config)
+    peft_model = peft_model.to("cuda")    
+    peft_model.print_trainable_parameters()
+    data_collator = DataCollatorForSeq2Seq(tokenizer=tokenizer, model=model_name)
+    nltk.download('punkt', quiet=True)
+    rogue_metric = evaluate.load('rouge')
+    training_args = Seq2SeqTrainingArguments(
+    output_dir="./peft_results",
+    learning_rate=LEARNING_RATE,
+    num_train_epochs=NUM_EPOCHS,
+    evaluation_strategy="epoch",
+    predict_with_generate=True,
+    per_device_train_batch_size=BATCH_SIZE,
+    per_device_eval_batch_size=PER_DEVICE_EVAL_BATCH,
+    weight_decay=WEIGHT_DECAY,
+    save_total_limit=SAVE_TOTAL_LIM,
+    push_to_hub=False
+    )
+
+    trainer = Seq2SeqTrainer(
+            model=peft_model,
+            args=training_args,
+            train_dataset=tensored_data["train"],
+            eval_dataset=tensored_data["test"],
+            tokenizer=tokenizer,
+            data_collator=data_collator,
+            compute_metrics=compute_metrics
+    )
+    
+    trainer.train()
+    
+if __name__ == "__main__":
+    main()
