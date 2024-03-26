@@ -1,0 +1,16 @@
+accelerate==0.27.2
+datasets==2.15.0
+diffusers==0.16.1
+evaluate==0.4.0
+transformers==4.39.0
+optimum==1.8.6
+nltk==3.8.1
+sentencepiece==0.2.0
+tokenizers==0.15.2
+rouge-score==0.1.2
+peft==0.8.2
+huggingface-hub==0.21.1
+azureml-evaluate-mlflow==47.0.0
+azureml-mlflow==1.51.0
+mlflow==2.10.2
+mlflow-skinny==2.10.2
