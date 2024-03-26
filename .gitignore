@@ -4,3 +4,7 @@
 /.venv
 /.rlenv
 models/
+*.amltmp 
+*.amltemp
+events.out.*
+
