@@ -14,3 +14,4 @@ azureml-evaluate-mlflow==47.0.0
 azureml-mlflow==1.51.0
 mlflow==2.10.2
 mlflow-skinny==2.10.2
+azure-ai-ml>=1.10

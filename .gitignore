@@ -7,4 +7,5 @@ models/
 *.amltmp 
 *.amltemp
 events.out.*
+config.json
 

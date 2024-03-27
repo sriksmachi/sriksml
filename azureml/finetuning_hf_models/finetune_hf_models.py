@@ -62,30 +62,30 @@ class TrainingArguments:
         metadata={"help": "Number of test examples"},
         default=300
     )
-    LEARNING_RATE: int = field(
+    learning_rate: int = field(
         metadata={"help": "Learning rate for the model"},
         default=1e-3
     )
-    BATCH_SIZE: int = field(
+    batch_size: int = field(
         metadata={"help": "Batch size for training"},
         default=8
     )
-    PER_DEVICE_EVAL_BATCH: int = field(
+    per_device_eval_batch: int = field(
         metadata={"help": "Batch size for evaluation"},
         default=8
     )
-    WEIGHT_DECAY: float = field(
+    weight_decay: float = field(
         metadata={"help": "Weight decay for the model"},
         default=0.01
     )
-    SAVE_TOTAL_LIM: int = field(
+    save_total_lim: int = field(
         metadata={"help": "Number of checkpoints to save"},
         default=3
     )
-    NUM_EPOCHS: int = field(
+    num_epochs: int = field(
         metadata={"help": "Number of epochs to train the model"},
         default=5
-    )
+    ),
     lora_rank: int = field(
         metadata={"help": "Rank of the LoRA matrix"},
         default=16
@@ -93,16 +93,27 @@ class TrainingArguments:
     log_level: str = field(
         metadata={"help": "Logging level"},
         default="INFO"
+    ),
+    lora_rank: int = field(
+        metadata={"help": "Rank of the LoRA matrix"},
+        default=16
+    ),
+    lora_alpha: int = field(
+        metadata={"help": "Alpha value for LoRA"},
+        default=32
+    ),
+    lora_dropout: float = field(
+        metadata={"help": "Dropout value for LoRA"},
+        default=0.05
     )
     
     
 def main():
     
     parser = HfArgumentParser((ModelArguments, TrainingArguments))
-    model_args, training_args = parser.parse_args_into_dataclasses()
+    model_args, training_args = parser.parse_args_into_dataclasses()    
     parser.add_argument("--tensorboard_log_dir", default="/outputs/tblogs/")
-    log_level = training_args.log_level
-    logging.basicConfig(level=log_level)
+    #logging.basicConfig(level=training_args.log_level)    
     logger.info(f"Training/evaluation parameters {training_args}")
     set_seed(training_args.seed)
     
@@ -154,7 +165,9 @@ def main():
     data_collator = DataCollatorForSeq2Seq(tokenizer=tokenizer, model=model_args.model_name)
     
     # 3. Load the PEFT model    
-    lora_config = LoraConfig(r=16, lora_alpha=32, target_modules=["lm_head"], lora_dropout=0.05, bias="none", task_type=TaskType.SEQ_2_SEQ_LM) 
+    lora_config = LoraConfig(r=training_args.lora_rank, lora_alpha=training_args.lora_alpha, 
+                             target_modules=["lm_head"], lora_dropout=training_args.lora_dropout, 
+                             bias="none", task_type=TaskType.SEQ_2_SEQ_LM) 
     peft_model = get_peft_model(model, lora_config)
     peft_model = peft_model.to("cuda")    
     peft_model.print_trainable_parameters()
