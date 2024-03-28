@@ -113,8 +113,9 @@ def main():
     parser = HfArgumentParser((ModelArguments, TrainingArguments))
     model_args, training_args = parser.parse_args_into_dataclasses()    
     parser.add_argument("--tensorboard_log_dir", default="/outputs/tblogs/")
-    #logging.basicConfig(level=training_args.log_level)    
-    logger.info(f"Training/evaluation parameters {training_args}")
+    level = logging.getLevelName(training_args.log_level)
+    logging.basicConfig(level=level)    
+    print(f"Training/evaluation parameters {training_args}")
     set_seed(training_args.seed)
     
     def preprocess_data(examples):
@@ -164,10 +165,14 @@ def main():
     model = AutoModelForSeq2SeqLM.from_pretrained(model_args.model_name, torch_dtype=torch.bfloat16)
     data_collator = DataCollatorForSeq2Seq(tokenizer=tokenizer, model=model_args.model_name)
     
-    # 3. Load the PEFT model    
-    lora_config = LoraConfig(r=training_args.lora_rank, lora_alpha=training_args.lora_alpha, 
-                             target_modules=["lm_head"], lora_dropout=training_args.lora_dropout, 
+    # 3. Load the PEFT model   
+    rank = training_args.lora_rank 
+    alpha = training_args.lora_alpha
+    dropout = training_args.lora_dropout
+    lora_config = LoraConfig(r=rank, lora_alpha=alpha, 
+                             target_modules=["lm_head"], lora_dropout=dropout, 
                              bias="none", task_type=TaskType.SEQ_2_SEQ_LM) 
+    logger.info(f"LoRA config: {lora_config}")
     peft_model = get_peft_model(model, lora_config)
     peft_model = peft_model.to("cuda")    
     peft_model.print_trainable_parameters()
