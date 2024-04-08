@@ -112,10 +112,11 @@ def main():
     
     parser = HfArgumentParser((ModelArguments, TrainingArguments))
     model_args, training_args = parser.parse_args_into_dataclasses()    
-    parser.add_argument("--tensorboard_log_dir", default="/outputs/tblogs/")
+    print(f"Training/evaluation parameters {training_args}")
+
+    parser.add_argument("--tensorboard_log_dir", default="/outputs/tblogs/")   
     level = logging.getLevelName(training_args.log_level)
     logging.basicConfig(level=level)    
-    print(f"Training/evaluation parameters {training_args}")
     set_seed(training_args.seed)
     
     def preprocess_data(examples):
