@@ -8,4 +8,5 @@ models/
 *.amltemp
 events.out.*
 config.json
-
+mlruns/
+outputs/

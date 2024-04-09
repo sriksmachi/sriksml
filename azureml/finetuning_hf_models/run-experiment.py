@@ -45,7 +45,7 @@ def create_aml_cluster(ml_client, compute_cluster_name = "AmlComputeCluster", vm
     return compute
 
 # Function to create Environment
-def create_environment(ml_client, env_Name = "finetune_hf_lora"):
+def create_environment(ml_client, env_Name="finetune_hf_lora"):
     try:
         env = ml_client.environments.get(env_Name)
         print("successfully fetched environment:", env.name)
@@ -62,7 +62,7 @@ def create_environment(ml_client, env_Name = "finetune_hf_lora"):
     return env_docker_context
 
 # Function to create Job
-def create_job(compute_cluster, script_file = "finetune_hf_models.py", job_name = "hf_finetuning", env_name = "finetune_hf_lora"):
+def create_job(compute_cluster, script_file = "finetune_hf_models.py", job_name = "hf_finetuning", env_name = "finetune_hf_lora", azureml_tracking_uri = None):
     job = command(
         code=".",
         command=f"python {script_file} \
@@ -71,6 +71,8 @@ def create_job(compute_cluster, script_file = "finetune_hf_models.py", job_name 
             --num_epochs 1 \
             --target_input_length=512 \
             --target_max_length=100 \
+            --mlflow_tracking_uri {azureml_tracking_uri} \
+            --experiment_name=hf_finetuning_t5s_qna \
             --train_size=1000",            
     compute=compute_cluster,
     services={
@@ -93,12 +95,13 @@ def create_job(compute_cluster, script_file = "finetune_hf_models.py", job_name 
 if __name__ == "__main__":
     compute_cluster_name = "AmlComputeCluster"
     ml_client = create_ml_client()
+    azureml_tracking_uri = ml_client.workspaces.get(ml_client.workspace_name).mlflow_tracking_uri
     compute_cluster = create_aml_cluster(ml_client, compute_cluster_name = compute_cluster_name)
     env_docker_context = create_environment(ml_client)
-    job = create_job(compute_cluster_name)
+    job = create_job(compute_cluster_name, azureml_tracking_uri=azureml_tracking_uri)
     print(f"Creating job : {job}")
     job = ml_client.jobs.create_or_update(job)
     print("Job created successfully")
     print(job.studio_url)
-
+    
     
