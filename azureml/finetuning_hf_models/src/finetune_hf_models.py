@@ -21,6 +21,7 @@ from entities.training_arguments import TrainingArguments
 from entities.model_arguments import ModelArguments
 import mlflow
 import warnings
+import datetime
 
 warnings.filterwarnings("ignore")
 logger = logging.getLogger(__name__)
@@ -75,7 +76,8 @@ def main():
 
     def get_dataset(training_args):
         print(f"loading data from : {training_args.data_path}")
-        squad = load_dataset('json', data_files=training_args.data_path, field="data", split='train')
+        data_files = {"train": training_args.data_path}
+        squad = load_dataset('json', data_files=data_files, split='train')
         squad = squad.train_test_split(test_size=0.2)
         print(squad.shape)
         return squad
@@ -159,12 +161,13 @@ def main():
     )
 
     # train the model    
-    mlflow.create_experiment(training_args.experiment_name)
-    experiment_id = mlflow.get_experiment_by_name(training_args.experiment_name).experiment_id
+    experiment_name = f"{training_args.experiment_name}_{datetime.datetime.now().strftime('%Y%m%d%H%M%S')}"
+    mlflow.create_experiment(experiment_name)
+    experiment_id = mlflow.get_experiment_by_name(experiment_name).experiment_id
     mlflow.autolog()
     run_id = None
     artifact_path = "model"
-    model_name = f"{training_args.experiment_name}_model"
+    model_name = f"{experiment_name}_model"
     with mlflow.start_run(experiment_id=experiment_id) as run:
         run_id = run.info.run_id
         mlflow.log_text(f"mlflow run_id: {run.info.run_id}", artifact_file=f"{run_id}.txt")
