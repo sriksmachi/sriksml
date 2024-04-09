@@ -74,8 +74,10 @@ def main():
         return result
 
     def get_dataset(training_args):
-        squad = load_dataset(training_args.dataset, split="train")
+        print(f"loading data from : {training_args.data_path}")
+        squad = load_dataset('json', data_files=training_args.data_path, field="data", split='train')
         squad = squad.train_test_split(test_size=0.2)
+        print(squad.shape)
         return squad
 
     def load_tokenizer_model(model_args):
@@ -95,7 +97,7 @@ def main():
                                  bias="none", task_type=TaskType.SEQ_2_SEQ_LM) 
         logger.info(f"LoRA config: {lora_config}")
         peft_model = get_peft_model(model, lora_config)
-        peft_model = peft_model.to("cuda")    
+        # peft_model = peft_model.to("cuda")    
         peft_model.print_trainable_parameters()
         return peft_model
 
