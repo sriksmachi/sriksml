@@ -10,3 +10,6 @@ events.out.*
 config.json
 mlruns/
 outputs/
+**/*.amlignore
+**/*.pyc
+.ipynb_aml_checkpoints/
