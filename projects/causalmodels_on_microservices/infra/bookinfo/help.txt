@@ -1,0 +1,24 @@
+Installing Istio
+----------------------
+- Install Istio from Azure Portal Commandline (https://blog.shanelee.name/2018/08/12/istio-on-azure-aks/)
+- istioctl install --set profile=demo
+- install crds `kubectl apply -f code/istio/samples/addons`
+- Get ingress host and IP : https://istio.io/latest/docs/tasks/traffic-management/ingress/gateway-api/
+
+gateway url
+
+export INGRESS_HOST=$(kubectl -n istio-system get service istio-ingressgateway -o jsonpath='{.status.loadBalancer.ingress[0].ip}')  
+export INGRESS_PORT=$(kubectl -n istio-system get service istio-ingressgateway -o jsonpath='{.spec.ports[?(@.name=="http2")].port}')  
+export SECURE_INGRESS_PORT=$(kubectl -n istio-system get service istio-ingressgateway -o jsonpath='{.spec.ports[?(@.name=="https")].port}')  
+export GATEWAY_URL=$INGRESS_HOST:$INGRESS_PORT
+curl -o /dev/null -s -w "%{http_code}\n" http://${GATEWAY_URL}/productpage
+
+# This should respond with 200
+
+
+Execute loadBalancer
+while true; do  
+  curl -s http://$GATEWAY_URL/productpage > /dev/null
+  echo -n .;
+  sleep 0.2
+done  
