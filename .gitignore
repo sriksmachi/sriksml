@@ -13,3 +13,6 @@ outputs/
 **/*.amlignore
 **/*.pyc
 .ipynb_aml_checkpoints/
+.data/
+sock-shop-data/
+venv/
