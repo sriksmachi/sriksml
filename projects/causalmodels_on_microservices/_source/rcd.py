@@ -2,10 +2,8 @@
 
 import time
 import argparse
-
 import numpy as np
-
-import utils as u
+import Users.vism.sriksml.projects.causalmodels_on_microservices.appendix.utils as u
 
 VERBOSE = True
 
@@ -95,7 +93,7 @@ def run_multi_phase(normal_df, anomalous_df, gamma, localized, bins, verbose):
     # Phase-2
     mi_union = []
     new_nodes = f_child_union
-    rc, _, mi, ci = u.top_k_rc(normal_df.loc[:, new_nodes],
+    rc, g, mi, ci = u.top_k_rc(normal_df.loc[:, new_nodes],
                                anomalous_df.loc[:, new_nodes],
                                bins=bins,
                                mi=mi_union,

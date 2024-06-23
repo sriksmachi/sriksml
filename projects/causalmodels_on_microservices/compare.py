@@ -6,9 +6,9 @@ from multiprocessing import Pool
 import numpy as np
 import pandas as pd
 
-import rcd
+import Users.vism.sriksml.projects.causalmodels_on_microservices.appendix.rcd as rcd
 import gen_data as data
-import utils as u
+import Users.vism.sriksml.projects.causalmodels_on_microservices.appendix.utils as u
 
 THREADING = True
 WORKERS = 16 - 2

@@ -1,14 +1,12 @@
 # Disable warnings from sklearn
 import warnings
 warnings.filterwarnings('ignore')
-
 import numpy as np
 import pandas as pd
 import networkx as nx
 import matplotlib.pyplot as plt
 plt.style.use('fivethirtyeight')
 from sklearn.preprocessing import KBinsDiscretizer
-
 from causallearn.utils.cit import chisq
 from causallearn.utils.PCUtils import SkeletonDiscovery
 
@@ -16,7 +14,6 @@ from causallearn.utils.PCUtils import SkeletonDiscovery
 # from sock-shop or real-world application.
 
 CI_TEST = chisq
-
 START_ALPHA = 0.001
 ALPHA_STEP = 0.1
 ALPHA_LIMIT = 1
@@ -36,7 +33,7 @@ def preprocess(n_df, a_df, per):
 
     n_df = _process(n_df)
     a_df = _process(a_df)
-
+    
     n_df = drop_constant(n_df)
     a_df = drop_constant(a_df)
 
@@ -124,6 +121,7 @@ def top_k_rc(normal_df, anomalous_df, bins=None, mi=[],
     for i in np.arange(_alpha, ALPHA_LIMIT, ALPHA_STEP):
         cg = _run_pc(i)
         G = cg.nx_graph
+        print(G)          
         no_ci += cg.no_ci_tests
 
         if G is None: continue

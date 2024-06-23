@@ -11,7 +11,7 @@ import pyAgrum.lib.image as gumimage
 from causallearn.graph.GraphNode import GraphNode
 from causallearn.graph.GeneralGraph import GeneralGraph
 
-import utils as u
+import Users.vism.sriksml.projects.causalmodels_on_microservices.appendix.utils as u
 
 GROUND_TRUTH = 'ground-truth'
 VERBOSE = True
