@@ -21,11 +21,61 @@ from model_arguments import ModelArguments
 import mlflow
 import warnings
 import datetime
+from datasets import load_dataset
 
 warnings.filterwarnings("ignore")
 logger = logging.getLogger(__name__)
 # Disabling parallelism to avoid deadlocks
 os.environ["TOKENIZERS_PARALLELISM"] = "false"
+
+def get_dataset(training_args):
+    print(f"loading data from : {training_args.data_path}")
+    data_files = {"train": training_args.data_path}
+    squad = load_dataset('json', data_files=data_files, split='train')
+    squad = squad.train_test_split(test_size=0.2)
+    return squad
+
+def load_tokenizer_model(model_args):
+    # Load the tokenizer and model
+    tokenizer = AutoTokenizer.from_pretrained(model_args.model_name)
+    model = AutoModelForSeq2SeqLM.from_pretrained(model_args.model_name, torch_dtype=torch.bfloat16)
+    data_collator = DataCollatorForSeq2Seq(tokenizer=tokenizer, model=model_args.model_name)
+    return tokenizer, model, data_collator
+
+def preprocess_dataset(squad, training_args, tokenizer):
+        # Preprocess the data
+        def preprocess_data(examples):
+              """Adds prefix, tokenizes and sets the labels"""
+              questions = examples["question"]
+              contexts = examples["context"]
+              answers = []
+              for answer in examples["answers.text"]:
+                answers.append(answer[0])
+              inputs = []
+              for question, context in zip(questions, contexts):
+                prefix = f"""Answer a question about this article in few sentences:\n{context}\nQ:{question}A:"""
+                input = prefix.format(context=context.strip(), question=question.strip())
+                inputs.append(input)
+              model_inputs = tokenizer(inputs,
+                                       truncation='longest_first',
+                                       padding="max_length",
+                                       max_length=training_args.target_input_length,
+                                       return_tensors="pt")
+              model_inputs["query"] = tokenizer.batch_decode(model_inputs["input_ids"], skip_special_tokens=True)
+              labels = tokenizer(text_target=answers, max_length=training_args.target_max_length, truncation=True)
+              model_inputs["labels"] = labels["input_ids"]
+              return model_inputs
+        
+        squad = squad.flatten()  
+        filtered_squad = squad.filter(lambda x: (len(x.get('context')) + len(x.get('question')) < training_args.target_input_length) 
+                                      and (x.get('answers.answer_start')[0]) < (training_args.target_input_length
+                                                                                + len(x.get('answers.text'))) and len(x.get('answers.text')) > 0)
+        filtered_squad = filtered_squad.shuffle()
+        filtered_squad['train'] = filtered_squad['train'].select(range(training_args.train_size))
+        filtered_squad['test'] = filtered_squad['test'].select(range(training_args.test_size))
+        tokenized_data = filtered_squad.map(preprocess_data, remove_columns=squad["train"].column_names, batched=True)
+        tokenized_data.set_format("pt", columns=["input_ids"], output_all_columns=True)
+        return tokenized_data
 
 def load_tokenizer_model(model_args):
     # Load the tokenizer and model
@@ -87,23 +137,29 @@ def load_peft_model(model, training_args):
         peft_model.print_trainable_parameters()
         return peft_model
 
-def training_component(input_data: Input(type="uri_folder")):
+def training_component():
     parser = HfArgumentParser((ModelArguments, TrainingArguments))
     model_args, training_args = parser.parse_args_into_dataclasses()        
+    mlflow.set_tracking_uri(training_args.mlflow_tracking_uri)
     parser.add_argument("--tensorboard_log_dir", default="/outputs/tblogs/")    
     logging.basicConfig(level=training_args.log_level)    
-    set_seed(training_args.seed)
     logger.info(f"Training arguments: {training_args}")
-    mlflow.set_tracking_uri(training_args.mlflow_tracking_uri)
+    set_seed(training_args.seed)
+    
+    # get the dataset
+    dataset = get_dataset(training_args)    
+    
+    # preprocess the dataset, this returns tokenized data
     tokenizer, model, data_collator = load_tokenizer_model(model_args)
     peft_model = load_peft_model(model, training_args)
     seq_2_seq_training_args = load_training_arguments(training_args)
-
+    tensored_data = preprocess_dataset(dataset, training_args, tokenizer)       
+    
     trainer = Seq2SeqTrainer(
         model=peft_model,
         args=seq_2_seq_training_args,
-        train_dataset=input_data["train"],
-        eval_dataset=input_data["test"],
+        train_dataset=tensored_data["train"],
+        eval_dataset=tensored_data["test"],
         tokenizer=tokenizer,
         data_collator=data_collator,
         compute_metrics=compute_metrics
@@ -135,5 +191,5 @@ def training_component(input_data: Input(type="uri_folder")):
     mlflow.register_model(f"runs:/{run_id}/{artifact_path}", model_name)
     
     
-if __name__ == "__main__":
+if __name__ == "__main__":    
     training_component()

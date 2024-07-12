@@ -81,4 +81,8 @@ class TrainingArguments:
         metadata={"help": "Name of the experiment"},
         default="hf_finetuning"
     )
+    output_dir: str = field(
+        metadata={"help": "Output directory"},
+        default="outputs"
+    )
         

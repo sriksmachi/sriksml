@@ -8,11 +8,12 @@ models/
 *.amltemp
 events.out.*
 config.json
-mlruns/
-outputs/
+**/outputs/
 **/*.amlignore
 **/*.pyc
 .ipynb_aml_checkpoints/
 .data/
 sock-shop-data/
 venv/
+**/mlruns
+**/data
