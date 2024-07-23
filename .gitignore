@@ -17,3 +17,4 @@ sock-shop-data/
 venv/
 **/mlruns
 **/data
+*.csv
