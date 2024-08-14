@@ -19,3 +19,4 @@ venv/
 **/data
 *.csv
 .vscode
+*.env
