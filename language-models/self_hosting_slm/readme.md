@@ -18,9 +18,7 @@ Small language models (SLMs) are often favored over large language models (LLMs)
 It's important to note that while SLMs have these advantages, LLMs still play a significant role in the AI field due to their vast knowledge base and advanced capabilities in generating human-like text. The choice between an SLM and an LLM often depends on the specific requirements of the task at hand.
 
 
-## About
-
-:black_nib:  [UI for the application is WIP]
+## About 
 
 The application container, runs on top of SLM deployed on Language model runtime called OLLAMA. During the build stage the a customized ollama container is created with `phi3` model. You can custome model by changing the name in `ollama.dockerfile`. Application identifies the files in the folder called `rag_data` on the host during startup and populates a vector store. This vector store is later used to answer queries from the user. 
 
