@@ -50,11 +50,6 @@ llm = Ollama(
 async def read_root():
     return {"Hello": "World"}
 
-@app.get("/pull")
-async def pull():
-    llm.pull()
-    return {"status": "success"}
-
 def setup():
     """
     Set up the retrieval QA chain.
@@ -63,7 +58,9 @@ def setup():
     """
     # Create embeddings
     print(f'Current working directory : {os.getcwd()}')
-    data_folder = "rag_data"
+    # the data folder should be in the same directory as this file
+    # the folder name here should match with the folder name used in the docker-compose file
+    data_folder = "rag_data" 
     files = os.listdir(os.getcwd() + f"/{data_folder}")
     
     QA_CHAIN_PROMPT = """Use the following pieces of context to answer the question at the end.
@@ -77,6 +74,7 @@ def setup():
     all_pages = []
     for file in files:
         print(f"Processing file: {file}")
+        # Load the document
         loader = PyPDFLoader(os.getcwd() + f'/{data_folder}/' + file)
         print("Loading pages...")
         pages = loader.load()
@@ -98,7 +96,8 @@ def setup():
     return chain
     
 agent = setup()
-    
+
+# Define a POST endpoint to generate a response to a question
 @app.post("/generate")
 async def chat(question: Input):
     print('question:', question.query)
