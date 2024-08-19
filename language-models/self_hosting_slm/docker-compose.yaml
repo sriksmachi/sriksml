@@ -1,0 +1,44 @@
+version: '3.8'
+services:
+  app:
+    build: 
+      context: .
+      dockerfile: app.dockerfile
+    ports:
+      - 8000:8000
+    volumes:
+      - .:/code
+      - ./slm:/root/.rag_data
+    container_name: slm  
+    command: uvicorn src.main:app --host 0.0.0.0 --port 8000 --reload
+    restart: always
+    links:
+      - ollama
+    depends_on:
+      - ollama
+    networks:
+      - ollama-docker
+
+  ollama:
+    build: 
+      context: .
+      dockerfile: ollama.dockerfile
+    ports:
+      - 7869:11434
+    volumes:
+      - .:/code
+      - ./ollama/ollama:/root/.ollama
+    container_name: ollama
+    pull_policy: always
+    tty: true
+    restart: always
+    environment:
+      - OLLAMA_KEEP_ALIVE=24h
+      - OLLAMA_HOST=0.0.0.0
+    networks:
+      - ollama-docker
+
+networks:
+  ollama-docker:
+    external: false
+  

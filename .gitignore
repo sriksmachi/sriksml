@@ -20,3 +20,5 @@ venv/
 *.csv
 .vscode
 *.env
+ollama/
+slm/

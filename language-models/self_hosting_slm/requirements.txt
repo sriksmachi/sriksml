@@ -1,0 +1,14 @@
+fastapi
+uvicorn
+langchain
+openai
+debugpy
+langchain-community
+langchain
+langchainhub
+gpt4all
+chromadb
+requests
+beautifulsoup4
+pypdf
+ollama

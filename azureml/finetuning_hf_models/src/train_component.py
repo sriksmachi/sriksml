@@ -1,3 +1,7 @@
+# How to run this script in standalone mode:
+# python train_component.py --model_name "t5-small" --data_path "data/squad.json" --train_size 100 --test_size 10 --target_input_length 512 --target_max_length 128 --num_epochs 1 --batch_size 8 --per_device_eval 8 --save_total_lim 3 --lora_rank 1 --lora_alpha 0.5 --lora_dropout 0.1 --learning_rate 1e-4 --weight_decay 0.01 --log_level INFO --seed 42 --experiment_name "squad_t5_small"
+
+
 from pathlib import Path
 from mldesigner import command_component, Input, Output
 from transformers import (
