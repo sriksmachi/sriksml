@@ -2,9 +2,9 @@ TLDR; This repository offers examples on constructing common RAG applications wi
 
 # Private RAG Application. 
 
-Large language models are incredily powerful, solve a wide variety of problems. However, for a wide range of problems like simple RAGs, reasoning, summarization or QnA tasks we do not such powerful models that are costlier. Additionally, all the cloud hosted LLMs that typically work on token based billing, need data to reside on cloud. Certain domains like banking, health have to deal with several data residency, security obligations that restrict them from uploading data to 3rd party data centers. 
+Large language models (LLMs) are incredibly powerful and can address a broad spectrum of challenges. However, for tasks such as simple retrievable answer generators (RAGs), reasoning, summarization, or question and answer (QnA), we don't necessarily require such advanced models due to their higher costs. Moreover, cloud-hosted LLMs, which typically operate on a token-based billing system, require data to be stored on the cloud. This poses a challenge for sectors like banking and healthcare, which face stringent data residency and security regulations, preventing them from transferring data to third-party data centers.
 
-Recent developments in the field of small language models (SLM) have revealed their significant potential. These models are cost-effective, demonstrate robust capabilities, and are compatible with standard computing devices (CPUs). 
+Recent developments in the field of small language models (SLM) have revealed their significant potential. These models are cost-effective, demonstrate robust capabilities, and are compatible with standard computing devices (CPUs).
 
 Small language models (SLMs) are often favored over large language models (LLMs) for several reasons:
 1. **Efficiency**: SLMs require fewer computational resources for training and deployment, making them more accessible and cost-effective, especially for applications that need to run on devices with limited processing power, such as mobile phones
