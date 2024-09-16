@@ -1,0 +1,10 @@
+[
+    {
+        "query": "AppRequests | where TimeGenerated > datetime('2024-09-12T00:00:01.000Z') and TimeGenerated < datetime('2024-09-12T23:00:00.000Z') | where Url !has 'ping' and Url <> '' and Url has 'api' and Name !has 'OPTIONS' and Success == 'True' | where Url has 'api/rules' | project Id, TimeGenerated, Name, Url, DurationMs, OperationId, ParentId | order by TimeGenerated asc",
+        "title": "requests"
+    },
+    {
+        "query": "Perf | where TimeGenerated > datetime('2024-09-12T00:00:01.000Z') and TimeGenerated < datetime('2024-09-12T23:00:00.000Z') | order by TimeGenerated asc",
+        "title": "perf_counters"
+    }
+]

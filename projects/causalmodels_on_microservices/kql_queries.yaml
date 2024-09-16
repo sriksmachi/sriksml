@@ -1,0 +1,18 @@
+{
+    "general": { "timedelta": 24 },
+    "queries":
+        [
+            {
+                "query": "AppRequests | where TimeGenerated > now(-6h) | where Url !has 'ping' and Url <> '' and Url has 'api' and Name !has 'OPTIONS' and Success == 'True' | where Url has 'api/rules' | project Id, TimeGenerated, Name, Url, DurationMs, OperationId, ParentId | order by TimeGenerated asc",
+                "title": "requests"
+            },
+            {
+                "query": "Perf | where TimeGenerated > now(-6h) | order by TimeGenerated asc",
+                "title": "perf_counters"
+            },
+            {
+                "query": "AppExceptions | where TimeGenerated > now(-6h) | project TimeGenerated, AppRoleName, OuterMessage, ExceptionType, OperationId, ParentId | order by TimeGenerated asc",
+                "title": "exceptions"
+            }
+        ]
+}
