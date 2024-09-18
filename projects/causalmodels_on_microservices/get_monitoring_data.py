@@ -44,6 +44,7 @@ class AzureMonitorClient:
             results = self.client.query_workspace(self.workspace_id, query=query, timespan=timedelta(days=7))
             table = results.tables[0]
             df = pd.DataFrame(data=table.rows, columns=table.columns)
+            df['Name'] = df['Name'].str.strip()
             return df
         except HttpResponseError as err:
             self.logger.fatal("Something fatal happened")

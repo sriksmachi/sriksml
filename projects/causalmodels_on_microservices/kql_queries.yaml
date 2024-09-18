@@ -7,7 +7,7 @@
                 "title": "requests"
             },
             {
-                "query": "Perf | where TimeGenerated > now(-6h) | order by TimeGenerated asc",
+                "query": "Perf | where TimeGenerated > now(-12h) | where ObjectName has 'K8SContainer' and InstanceName has 'api' | project TimeGenerated, CounterName, CounterValue, InstanceName | order by TimeGenerated asc",
                 "title": "perf_counters"
             },
             {

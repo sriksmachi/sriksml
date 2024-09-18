@@ -15,10 +15,10 @@ CSV_FILE_SERVICE_DEP_GRAPH_TEMP = 'service_dep_graph_temp.csv'
 MATCH_NODE_QUERY = "MATCH (n: {type}) WHERE n.id = '{id}' RETURN n"
 CREATE_NODE_QUERY = "CREATE (n: {type} {{id: '{id}'}})"
 MATCH_AND_CREATE_REL_QUERY = """MATCH (a:{parent_type} {{id: '{parent_id}'}}), (b:{child_type} {{id: '{child_id}'}}) \
-CREATE (a)-[r:{rel_name} {{id: '{id}', duration: {duration}, dependencyType: '{item_type}', counter: {counter}, \
-operation_Name: '{name}', type: '{type}', operationId: '{operation_id}'}}]->(b) RETURN r"""
+CREATE (a)<-[r:{rel_name} {{id: '{id}', duration: {duration}, dependencyType: '{item_type}', counter: {counter}, \
+operation_Name: '{name}', type: '{type}', operationId: '{operation_id}', timeGenerated: '{timeGenerated}', total_duration: {total_duration}}}]-(b) RETURN r"""
 CLEAR_GRAPH_QUERY = 'MATCH (n) DETACH DELETE n'
 POST_RULES_RULES = 'POST Rules/Rules'
 DURATION_THRESHOLD = 2000
-MATCH_AND_CREATE_REL_TRACES_QUERY = """MATCH (a:{parent_type} {{id: '{parent_id}'}}), (b:{child_type} {{id: '{child_id}'}}) CREATE (a)-[r:{rel_name} {{id: '{id}', traces: {traces}}}]->(b) RETURN r"""
+MATCH_AND_CREATE_REL_TRACES_QUERY = """MATCH (a:{parent_type} {{id: '{parent_id}'}}), (b:{child_type} {{id: '{child_id}'}}) CREATE (a)<-[r:{rel_name} {{id: '{id}', traces: {traces}, total_duration: {total_duration}}}]-(b) RETURN r"""
 MATCH_APPTRACES_QUERY = "MATCH(n:AppTraces)<-[r:Traces]-(m:{node_type}) WHERE m.id = '{child_node}' and n.id = '{operation_id}' RETURN n"
