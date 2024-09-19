@@ -185,7 +185,7 @@ def main(graph, num_of_operations):
 
 if __name__ == '__main__':
   load_dotenv()
-  max_operations = 20
+  max_operations = 100
   # read command line arguments
   argparser = argparse.ArgumentParser()
   argparser.add_argument('--clear_graph', action='store_true', help='Clear the graph before building', default=True)
