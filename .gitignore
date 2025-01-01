@@ -22,3 +22,4 @@ venv/
 *.env
 ollama/
 slm/
+*.pdf
