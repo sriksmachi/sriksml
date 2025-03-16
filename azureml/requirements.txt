@@ -1,3 +1,6 @@
 pypdf
 azure-search
 azure-search-documents
+azure-ai-projects
+azure-identity
+python-dotenv
