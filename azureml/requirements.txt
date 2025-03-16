@@ -1,0 +1,3 @@
+pypdf
+azure-search
+azure-search-documents
