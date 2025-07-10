@@ -1,7 +1,0 @@
-env/
-dist/
-build
-__pycache__/
-data/
-rcd.egg-info/
-exp_results/

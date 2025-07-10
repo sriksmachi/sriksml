@@ -15,6 +15,7 @@ logging.basicConfig(
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
     stream=sys.stderr,
 )
+
 logger = logging.getLogger("azure_agent_mcp")
 
 # Global variables for client and agent cache
@@ -134,6 +135,7 @@ async def query_agent(agent_id: str, query: str) -> str:
 # Initialize MCP and server
 load_dotenv()
 server_initialized = initialize_server()
+
 mcp = FastMCP(
     "azure-agent",
     description="MCP server for Azure AI Agent Service integration",
@@ -198,4 +200,4 @@ if __name__ == "__main__":
     status = "successfully initialized" if server_initialized else "initialization failed"
     print(
         f"\n{'='*50}\nAzure AI Agent MCP Server {status}\nStarting server...\n{'='*50}\n")
-    mcp.run()
+    mcp.run(transport="stdio")

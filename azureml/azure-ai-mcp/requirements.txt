@@ -1,0 +1,5 @@
+langchain-community
+langchain-openai 
+langchain
+langgraph
+langchain-mcp-adapters
