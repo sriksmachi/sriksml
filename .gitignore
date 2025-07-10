@@ -2,6 +2,7 @@
 **/*.pkl
 /.env
 /.venv
+/.autogen
 /.rlenv
 models/
 *.amltmp 
