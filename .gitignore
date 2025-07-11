@@ -26,3 +26,5 @@ slm/
 *.pdf
 **/*.json
 /.langraph
+/.semantickernel
+/.crewai
