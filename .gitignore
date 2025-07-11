@@ -24,3 +24,5 @@ venv/
 ollama/
 slm/
 *.pdf
+**/*.json
+/.langraph
