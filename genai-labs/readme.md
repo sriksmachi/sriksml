@@ -18,6 +18,8 @@ This folder contains Jupyter notebooks that explore a wide range of modern langu
 | [010-transformers_101_nmt_eng_hin.ipynb](010-transformers_101_nmt_eng_hin.ipynb) | Transformers for English-Hindi neural machine translation. | Build a transformer model from scratch, understand attention mechanisms, and apply to sequence-to-sequence translation tasks. |
 | [011-transformers_101.ipynb](011-transformers_101.ipynb) | Transformers 101: foundational concepts and implementation. | Learn the basics of transformer models, attention, and encoder-decoder architectures. Follow a step-by-step implementation for language tasks. |
 | [012-variational-auto-encoders.ipynb](012-variational-auto-encoders.ipynb) | End-to-end Variational Autoencoders (VAE) for generative modeling. | Build and train VAEs, understand latent space, reparameterization trick, and generate new samples. Apply vector math for creative manipulations. |
+| [013-multiagentframeworks-in-action.ipynb](013-multiagentframeworks-in-action.ipynb) | Multiagent frameworks in action: Practical guide for stateful orchestrations. | Compare top multiagent frameworks (AutoGen, LangGraph, Semantic Kernel, CrewAI) with hands-on examples for building collaborative AI systems. |
+
 
 ---
 
