@@ -30,3 +30,4 @@ slm/
 /.crewai
 crewai_storage/
 report.md
+**/extracted_images/
