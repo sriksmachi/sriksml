@@ -1,0 +1,118 @@
+{
+    "name": "langchain-vector-demo",
+    "fields": [
+        {
+            "name": "id",
+            "type": "Edm.String",
+            "key": true,
+            "searchable": true
+        },
+        {
+            "name": "title",
+            "type": "Edm.String",
+            "searchable": true
+        },
+        {
+            "name": "content",
+            "type": "Edm.String",
+            "searchable": true
+        },
+        {
+            "name": "summary",
+            "type": "Edm.String",
+            "searchable": true
+        },
+        {
+            "name": "page_number",
+            "type": "Edm.Int32"
+        },
+        {
+            "name": "sections",
+            "type": "Edm.String",
+            "searchable": true
+        },
+        {
+            "name": "content_vector",
+            "type": "Collection(Edm.Single)",
+            "dimensions": 3,
+            "searchable": true,
+            "retrievable": true,
+            "vectorSearchProfile": "vector-profile-hnsw-scalar"
+        },
+        {
+            "name": "page_content",
+            "type": "Collection(Edm.ComplexType)",
+            "fields": [
+                {
+                    "name": "embedding",
+                    "type": "Collection(Edm.Single)",
+                    "dimensions": 3,
+                    "searchable": true,
+                    "retrievable": true,
+                    "vectorSearchProfile": "vector-profile-hnsw-scalar"
+                },
+                {
+                    "name": "content",
+                    "type": "Edm.String",
+                    "retrievable": true
+                },
+                {
+                    "name": "page_number",
+                    "type": "Edm.Int32"
+                },
+                {
+                    "name": "summary",
+                    "type": "Edm.String",
+                    "searchable": true,
+                    "retrievable": true
+                },
+                {
+                    "name": "type",
+                    "type": "Edm.String",
+                    "retrievable": true
+                },
+                {
+                    "name": "image_url",
+                    "type": "Edm.String",
+                    "retrievable": true
+                },
+                {
+                    "name": "id",
+                    "type": "Edm.String"
+                }
+            ]
+        }
+    ],
+    "vectorSearch": {
+        "compressions": [
+            {
+                "name": "scalar-quantization",
+                "kind": "scalarQuantization",
+                "rerankWithOriginalVectors": true,
+                "defaultOversampling": 10.0,
+                "scalarQuantizationParameters": {
+                    "quantizedDataType": "int8"
+                }
+            }
+        ],
+        "algorithms": [
+            {
+                "name": "hnsw-1",
+                "kind": "hnsw",
+                "hnswParameters": {
+                    "m": 4,
+                    "efConstruction": 400,
+                    "efSearch": 500,
+                    "metric": "cosine"
+                }
+            }
+        ],
+        "profiles": [
+            {
+                "name": "vector-profile-hnsw-scalar",
+                "compression": "scalar-quantization",
+                "algorithm": "hnsw-1"
+            }
+        ]
+    }
+}
